@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Canje — Kanjealo</title>
+  <link rel="stylesheet" href="./static/style.css">
+</head>
+<body>
+
+  <header class="nav">
+    <a class="brand" href="./index.html">
+      <span class="brand-mark">K</span>KANJEALO
+    </a>
+    <nav>
+      <a href="./index.html#beneficios">Beneficios</a>
+      <a href="./comprar.html" class="nav-cta">Comprar pase</a>
+      <a href="./mi-kanjealo.html" id="nav-my-pass">Mi Kanjealo</a>
+    </nav>
+  </header>
+
+  <div class="flash-wrap"></div>
+
+  <section class="redemption" id="redemption-content">
+    <!-- Renderizado dinámico -->
+  </section>
+
+  <footer class="footer">
+    <strong>KANJEALO</strong>
+    <span>Tu pase de beneficios para disfrutar Uruguay.</span>
+    <div class="footer-links">
+      <a href="./comprar.html">Comprar</a>
+      <a href="./admin-login.html">Comercios / Admin</a>
+    </div>
+  </footer>
+
+  <script src="./static/qrcode.js"></script>
+  <script src="./static/kanjealo.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      const container = document.getElementById('redemption-content');
+
+      if (!token) {
+        container.innerHTML = '<div class="empty">Código de canje no especificado. <a href="./index.html">Volver</a></div>';
+        return;
+      }
+
+      const item = Kanjealo.getRedemptionByCode(token);
+      if (!item) {
+        container.innerHTML = '<div class="empty">Código de canje inexistente. <a href="./index.html">Volver</a></div>';
+        return;
+      }
+
+      // Generate validation URL for the QR code
+      const validateUrl = window.location.origin + window.location.pathname.replace('canje-generado.html', 'canje.html') + '?token=' + token;
+      const qrSvg = QRCode.generateSVG(validateUrl, 220);
+
+      container.innerHTML = `
+        <div class="eyebrow">MOSTRÁ EL QR O EL CÓDIGO</div>
+        <h1>${item.business_name}</h1>
+        <p class="lead center">${item.benefit_text}</p>
+        
+        <div style="margin:20px auto;display:inline-block;padding:12px;background:#fff;border-radius:18px;border:1px solid #e8eaf0;box-shadow:0 8px 25px rgba(16,24,40,.06);">
+          ${qrSvg}
+        </div>
+        
+        <div class="code-box">${token}</div>
+        
+        <div class="warning">
+          ⚠ El comercio debe validar el código. Un canje validado no puede reutilizarse.
+        </div>
+        
+        <div style="margin-top:25px;">
+          <a class="btn btn-primary" href="./mi-kanjealo.html">Volver a Mi Kanjealo</a>
+          <a class="btn btn-ghost" href="./canje.html?token=${token}" target="_blank" style="margin-left:10px;">Simular escaneo de QR</a>
+        </div>
+      `;
+    });
+  </script>
+</body>
+</html>

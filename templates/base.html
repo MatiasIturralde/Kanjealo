@@ -1,0 +1,6 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{% block title %}Kanjealo{% endblock %}</title><link rel="stylesheet" href="{{url_for('static',filename='style.css')}}"></head><body>
+<header class="nav"><a class="brand" href="{{url_for('home')}}"><span class="brand-mark">K</span>KANJEALO</a><nav><a href="{{url_for('home')}}">Beneficios</a><a href="{{url_for('buy')}}" class="nav-cta">Comprar pase</a>{% if active_pass %}<a href="{{url_for('my_pass')}}">Mi Kanjealo</a>{% endif %}</nav></header>
+{% with messages=get_flashed_messages(with_categories=true) %}<div class="flash-wrap">{% for cat,msg in messages %}<div class="flash {{cat}}">{{msg}}</div>{% endfor %}</div>{% endwith %}
+{% block content %}{% endblock %}
+<footer class="footer"><strong>KANJEALO</strong><span>Tu pase de beneficios para disfrutar Uruguay.</span><div class="footer-links"><a href="{{url_for('buy')}}">Comprar</a><a href="{{url_for('login')}}">Comercios / Admin</a></div></footer>
+</body></html>

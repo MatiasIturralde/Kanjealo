@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — Kanjealo</title>
+  <link rel="stylesheet" href="./static/style.css">
+</head>
+<body class="admin-bg">
+
+  <header class="admin-header">
+    <a class="brand" href="./index.html">
+      <span class="brand-mark">K</span>KANJEALO
+    </a>
+    <nav>
+      <a href="./admin-cupon.html">+ Nuevo beneficio</a>
+      <a href="./admin-validar.html">Validar canje</a>
+      <a href="./admin-clave.html">Contraseña</a>
+      <a href="#" id="btn-logout">Salir</a>
+    </nav>
+  </header>
+
+  <div class="flash-wrap"></div>
+
+  <main class="container admin-main">
+    <div class="admin-title">
+      <div>
+        <div class="eyebrow">BACKOFFICE</div>
+        <h1>Beneficios Kanjealo</h1>
+        <p>Creá y administrá cada cupón con todas sus variables comerciales.</p>
+      </div>
+      <a class="button" href="./admin-cupon.html">+ Crear cupón</a>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="stats" id="stats-container">
+      <div><b id="stat-total">0</b><span>Beneficios</span></div>
+      <div><b id="stat-active">0</b><span>Activos</span></div>
+      <div><b id="stat-passes">0</b><span>Pases</span></div>
+      <div><b id="stat-issued">0</b><span>Canjes generados</span></div>
+      <div><b id="stat-redeemed">0</b><span>Canjeados</span></div>
+    </div>
+
+    <!-- Tabla de Cupones -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Establecimiento</th>
+            <th>Rubro</th>
+            <th>Tipo</th>
+            <th>Ahorro</th>
+            <th>Código</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="coupons-table-body">
+          <!-- Renderizado dinámico -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="./static/kanjealo.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!Kanjealo.isAdminLoggedIn()) {
+        window.location.href = './admin-login.html';
+        return;
+      }
+
+      document.getElementById('btn-logout').addEventListener('click', (e) => {
+        e.preventDefault();
+        Kanjealo.logoutAdmin();
+        window.location.href = './index.html';
+      });
+
+      function renderDashboard() {
+        // Stats
+        const stats = Kanjealo.getStats();
+        document.getElementById('stat-total').textContent = stats.totalCoupons;
+        document.getElementById('stat-active').textContent = stats.activeCoupons;
+        document.getElementById('stat-passes').textContent = stats.totalPasses;
+        document.getElementById('stat-issued').textContent = stats.redemptionsIssued;
+        document.getElementById('stat-redeemed').textContent = stats.redemptionsRedeemed;
+
+        // Table
+        const tbody = document.getElementById('coupons-table-body');
+        const coupons = Kanjealo.getCoupons('todos', false);
+
+        if (coupons.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:25px;">No hay cupones creados aún.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = coupons.map(c => {
+          const cat = Kanjealo.CATEGORIES[c.category] || ['General', '🏷️'];
+          const typeLabel = Kanjealo.BENEFIT_TYPES[c.benefit_type] || c.benefit_type;
+          const discountDetail = (c.benefit_type === 'descuento' && c.discount_percent > 0)
+            ? `<br><small>${Math.round(c.discount_percent)}%</small>`
+            : '';
+
+          return `
+            <tr>
+              <td>
+                <strong>${c.business_name}</strong><br>
+                <small>${c.address || ''}</small>
+              </td>
+              <td>
+                ${cat[0]}<br>
+                <small>${c.rubro}</small>
+              </td>
+              <td>
+                ${typeLabel}${discountDetail}
+              </td>
+              <td>
+                <strong>US$${Math.round(c.estimated_savings || 0)}</strong>
+              </td>
+              <td>
+                <code>${c.code}</code>
+              </td>
+              <td>
+                <span class="status ${c.active ? 'on' : 'off'}">
+                  ${c.active ? 'Activo' : 'Pausado'}
+                </span>
+              </td>
+              <td class="actions">
+                <a href="./admin-cupon.html?id=${c.id}">Editar</a>
+                <a href="./cupon.html?id=${c.id}" target="_blank">Ver</a>
+                <button type="button" data-delete-id="${c.id}">Eliminar</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        tbody.querySelectorAll('button[data-delete-id]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.dataset.deleteId;
+            if (confirm('¿Eliminar este beneficio y sus canjes asociados?')) {
+              Kanjealo.deleteCoupon(id);
+              Kanjealo.showToast('Cupón eliminado.', 'success');
+              renderDashboard();
+            }
+          });
+        });
+      }
+
+      renderDashboard();
+    });
+  </script>
+</body>
+</html>

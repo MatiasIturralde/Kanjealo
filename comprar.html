@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Comprar Kanjealo — Tu Pase Turístico</title>
+  <link rel="stylesheet" href="./static/style.css">
+</head>
+<body>
+
+  <header class="nav">
+    <a class="brand" href="./index.html">
+      <span class="brand-mark">K</span>KANJEALO
+    </a>
+    <nav>
+      <a href="./index.html#beneficios">Beneficios</a>
+      <a href="./comprar.html" class="nav-cta">Comprar pase</a>
+      <a href="./mi-kanjealo.html" id="nav-my-pass" style="display:none;">Mi Kanjealo</a>
+    </nav>
+  </header>
+
+  <div class="flash-wrap"></div>
+
+  <section class="buy-page">
+    <div class="eyebrow">TU PASE DE BENEFICIOS</div>
+    <h1>Pagá poco. Aprovechá mucho.</h1>
+    <p class="lead">Elegí la duración que mejor se adapte a tu estadía.</p>
+
+    <div class="plans">
+      <!-- Plan 24 horas -->
+      <div class="plan-card">
+        <div class="plan-hours">24 HORAS</div>
+        <div class="price">US$3</div>
+        <ul>
+          <li>Acceso a todos los beneficios</li>
+          <li>Múltiples canjes</li>
+          <li>Código + QR de canje</li>
+        </ul>
+        <button class="btn btn-primary btn-lg" id="btn-plan-24h" style="width:100%;">Elegir 24 horas</button>
+      </div>
+
+      <!-- Plan 48 horas -->
+      <div class="plan-card recommended">
+        <div class="ribbon">MEJOR VALOR</div>
+        <div class="plan-hours">48 HORAS</div>
+        <div class="price">US$5</div>
+        <ul>
+          <li>Acceso a todos los beneficios</li>
+          <li>Múltiples canjes</li>
+          <li>Dos días para aprovechar más</li>
+        </ul>
+        <button class="btn btn-primary btn-lg" id="btn-plan-48h" style="width:100%;">Elegir 48 horas</button>
+      </div>
+    </div>
+
+    <div class="guarantee">
+      <strong>💡 La propuesta:</strong> un solo beneficio puede alcanzar o superar el precio del pase; el resto de los beneficios son oportunidades adicionales de ahorro.
+    </div>
+
+    <p class="small-note" style="margin-top:20px;text-align:center;">
+      Modo demo / Live Server: El pase se activa de inmediato en tu navegador para que puedas probar la experiencia completa.
+    </p>
+  </section>
+
+  <footer class="footer">
+    <strong>KANJEALO</strong>
+    <span>Tu pase de beneficios para disfrutar Uruguay.</span>
+    <div class="footer-links">
+      <a href="./comprar.html">Comprar</a>
+      <a href="./admin-login.html">Comercios / Admin</a>
+    </div>
+  </footer>
+
+  <script src="./static/kanjealo.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('btn-plan-24h').addEventListener('click', () => handleBuy('24h'));
+      document.getElementById('btn-plan-48h').addEventListener('click', () => handleBuy('48h'));
+
+      function handleBuy(plan) {
+        try {
+          const pass = Kanjealo.buyPass(plan);
+          window.location.href = `./pase.html?pass_id=${pass.id}`;
+        } catch (err) {
+          Kanjealo.showToast(err.message, 'error');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

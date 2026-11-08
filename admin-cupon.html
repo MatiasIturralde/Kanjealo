@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Beneficio — Kanjealo Admin</title>
+  <link rel="stylesheet" href="./static/style.css">
+</head>
+<body class="admin-bg">
+
+  <main class="form-page container">
+    <a href="./admin.html">← Volver al panel</a>
+    <div class="eyebrow" style="margin-top:15px;">MÓDULO DE CUPONES</div>
+    <h1 id="form-title">Crear beneficio</h1>
+    <p class="muted">Cargá todas las variables que verá el turista y que usará el sistema para validar el canje.</p>
+
+    <div class="flash-wrap"></div>
+
+    <form class="form-card" id="coupon-form">
+      <h2>1. Identificación</h2>
+      <div class="grid-2">
+        <label>
+          Rubro / categoría
+          <select name="category" id="f-category" required>
+            <!-- Opciones dinámicas -->
+          </select>
+        </label>
+        <label>
+          Rubro específico
+          <input name="rubro" id="f-rubro" placeholder="Ej.: Gastronomía, Rent a car, Cambio de moneda" required>
+        </label>
+        <label>
+          Nombre del establecimiento
+          <input name="business_name" id="f-business_name" required>
+        </label>
+        <label>
+          Código de canje / beneficio
+          <input name="code" id="f-code" placeholder="KANJEA001" required style="text-transform:uppercase;">
+        </label>
+      </div>
+
+      <h2>2. Beneficio</h2>
+      <div class="grid-2">
+        <label>
+          Tipo de canje
+          <select name="benefit_type" id="f-benefit_type">
+            <option value="atencion">Atención / regalo</option>
+            <option value="descuento">Descuento</option>
+          </select>
+        </label>
+        <label>
+          Descuento (%)
+          <input type="number" step="0.01" min="0" max="100" name="discount_percent" id="f-discount_percent" placeholder="10" value="0">
+        </label>
+        <label class="full">
+          Descripción breve del beneficio
+          <textarea name="benefit_text" id="f-benefit_text" rows="3" required placeholder="Ej.: Una botella de vino de regalo / 10% de descuento en alquiler de vehículo"></textarea>
+        </label>
+        <label class="full">
+          Condiciones y descripción
+          <textarea name="description" id="f-description" rows="4" placeholder="Restricciones, días, horarios, disponibilidad, etc."></textarea>
+        </label>
+        <label>
+          Compra mínima
+          <input name="minimum_purchase" id="f-minimum_purchase" placeholder="$ 2.000">
+        </label>
+        <label>
+          Valor estimado del ahorro (US$)
+          <input type="number" step="0.01" min="0" name="estimated_savings" id="f-estimated_savings" placeholder="8" value="0">
+        </label>
+      </div>
+
+      <h2>3. Ubicación y contacto</h2>
+      <div class="grid-2">
+        <label>
+          Dirección
+          <input name="address" id="f-address" required placeholder="Calle y número, Ciudad">
+        </label>
+        <label>
+          Dirección Google Maps
+          <input name="maps_url" id="f-maps_url" placeholder="https://maps.google.com/?q=...">
+        </label>
+        <label>
+          WhatsApp
+          <input name="whatsapp" id="f-whatsapp" placeholder="+598 96 808 294">
+        </label>
+        <label>
+          Válido hasta
+          <input name="valid_until" id="f-valid_until" placeholder="31/12/2026">
+        </label>
+      </div>
+
+      <h2>4. Imagen y visibilidad</h2>
+      <label>
+        Imagen del establecimiento (URL)
+        <input name="image_url" id="f-image_url" placeholder="https://images.unsplash.com/...">
+      </label>
+      <label class="check">
+        <input type="checkbox" name="active" id="f-active" checked>
+        Beneficio activo y visible en el catálogo
+      </label>
+
+      <button class="button" type="submit" style="align-self:flex-start;">Guardar beneficio</button>
+    </form>
+  </main>
+
+  <script src="./static/kanjealo.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!Kanjealo.isAdminLoggedIn()) {
+        window.location.href = './admin-login.html';
+        return;
+      }
+
+      // Populate categories select
+      const catSelect = document.getElementById('f-category');
+      catSelect.innerHTML = Object.entries(Kanjealo.CATEGORIES).map(([key, [label, icon]]) => {
+        return `<option value="${key}">${icon} ${label}</option>`;
+      }).join('');
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const couponId = urlParams.get('id');
+
+      if (couponId) {
+        const coupon = Kanjealo.getCoupon(couponId);
+        if (coupon) {
+          document.getElementById('form-title').textContent = 'Editar beneficio';
+          document.title = 'Editar beneficio — Kanjealo Admin';
+          document.getElementById('f-category').value = coupon.category || '';
+          document.getElementById('f-rubro').value = coupon.rubro || '';
+          document.getElementById('f-business_name').value = coupon.business_name || '';
+          document.getElementById('f-code').value = coupon.code || '';
+          document.getElementById('f-benefit_type').value = coupon.benefit_type || 'atencion';
+          document.getElementById('f-discount_percent').value = coupon.discount_percent || 0;
+          document.getElementById('f-benefit_text').value = coupon.benefit_text || '';
+          document.getElementById('f-description').value = coupon.description || '';
+          document.getElementById('f-minimum_purchase').value = coupon.minimum_purchase || '';
+          document.getElementById('f-estimated_savings').value = coupon.estimated_savings || 0;
+          document.getElementById('f-address').value = coupon.address || '';
+          document.getElementById('f-maps_url').value = coupon.maps_url || '';
+          document.getElementById('f-whatsapp').value = coupon.whatsapp || '';
+          document.getElementById('f-valid_until').value = coupon.valid_until || '';
+          document.getElementById('f-image_url').value = coupon.image_url || '';
+          document.getElementById('f-active').checked = !!coupon.active;
+        }
+      }
+
+      document.getElementById('coupon-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const data = {
+          category: document.getElementById('f-category').value,
+          rubro: document.getElementById('f-rubro').value,
+          business_name: document.getElementById('f-business_name').value,
+          code: document.getElementById('f-code').value,
+          benefit_type: document.getElementById('f-benefit_type').value,
+          discount_percent: document.getElementById('f-discount_percent').value,
+          benefit_text: document.getElementById('f-benefit_text').value,
+          description: document.getElementById('f-description').value,
+          minimum_purchase: document.getElementById('f-minimum_purchase').value,
+          estimated_savings: document.getElementById('f-estimated_savings').value,
+          address: document.getElementById('f-address').value,
+          maps_url: document.getElementById('f-maps_url').value,
+          whatsapp: document.getElementById('f-whatsapp').value,
+          valid_until: document.getElementById('f-valid_until').value,
+          image_url: document.getElementById('f-image_url').value,
+          active: document.getElementById('f-active').checked
+        };
+
+        try {
+          Kanjealo.saveCoupon(data, couponId);
+          alert(couponId ? 'Cupón actualizado correctamente.' : 'Cupón creado correctamente.');
+          window.location.href = './admin.html';
+        } catch (err) {
+          Kanjealo.showToast(err.message, 'error');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

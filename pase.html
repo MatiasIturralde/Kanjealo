@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tu Kanjealo — Pase Activo</title>
+  <link rel="stylesheet" href="./static/style.css">
+</head>
+<body>
+
+  <header class="nav">
+    <a class="brand" href="./index.html">
+      <span class="brand-mark">K</span>KANJEALO
+    </a>
+    <nav>
+      <a href="./index.html#beneficios">Beneficios</a>
+      <a href="./comprar.html" class="nav-cta">Comprar pase</a>
+      <a href="./mi-kanjealo.html" id="nav-my-pass">Mi Kanjealo</a>
+    </nav>
+  </header>
+
+  <div class="flash-wrap"></div>
+
+  <section class="success-page">
+    <div class="success-icon">✓</div>
+    <div class="eyebrow">PASE ACTIVO</div>
+    <h1>Tu Kanjealo está listo.</h1>
+    <div class="demo-alert">MODO DEMO: Activado correctamente para tu estadía.</div>
+
+    <div class="pass-ticket" id="pass-ticket-card">
+      <span id="ticket-plan">KANJEALO PASS</span>
+      <strong id="ticket-code">KJ-0000000000</strong>
+      <small id="ticket-expires">Vence: Calculando...</small>
+    </div>
+
+    <div class="hero-actions center-actions">
+      <a class="btn btn-primary" href="./index.html#beneficios">Ver beneficios</a>
+      <a class="btn btn-ghost" href="./mi-kanjealo.html">Mi Kanjealo</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <strong>KANJEALO</strong>
+    <span>Tu pase de beneficios para disfrutar Uruguay.</span>
+    <div class="footer-links">
+      <a href="./comprar.html">Comprar</a>
+      <a href="./admin-login.html">Comercios / Admin</a>
+    </div>
+  </footer>
+
+  <script src="./static/kanjealo.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const pass = Kanjealo.getActivePass();
+      if (!pass) {
+        window.location.href = './comprar.html';
+        return;
+      }
+
+      document.getElementById('ticket-plan').textContent = (pass.plan || '24H').toUpperCase() + ' PASS';
+      document.getElementById('ticket-code').textContent = pass.pass_code;
+      document.getElementById('ticket-expires').textContent = 'Vence: ' + Kanjealo.formatDate(pass.expires_at);
+    });
+  </script>
+</body>
+</html>

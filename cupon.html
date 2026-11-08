@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Beneficio — Kanjealo</title>
+  <link rel="stylesheet" href="./static/style.css">
+</head>
+<body>
+
+  <header class="nav">
+    <a class="brand" href="./index.html">
+      <span class="brand-mark">K</span>KANJEALO
+    </a>
+    <nav>
+      <a href="./index.html#beneficios">Beneficios</a>
+      <a href="./comprar.html" class="nav-cta">Comprar pase</a>
+      <a href="./mi-kanjealo.html" id="nav-my-pass" style="display:none;">Mi Kanjealo</a>
+    </nav>
+  </header>
+
+  <div class="flash-wrap"></div>
+
+  <div id="coupon-content">
+    <!-- Renderizado dinámico -->
+  </div>
+
+  <footer class="footer">
+    <strong>KANJEALO</strong>
+    <span>Tu pase de beneficios para disfrutar Uruguay.</span>
+    <div class="footer-links">
+      <a href="./comprar.html">Comprar</a>
+      <a href="./admin-login.html">Comercios / Admin</a>
+    </div>
+  </footer>
+
+  <script src="./static/kanjealo.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const couponId = urlParams.get('id');
+      const container = document.getElementById('coupon-content');
+
+      if (!couponId) {
+        container.innerHTML = '<div class="container empty" style="margin:50px auto;max-width:600px;text-align:center;">No se especificó un beneficio. <a href="./index.html">Volver al inicio</a></div>';
+        return;
+      }
+
+      const coupon = Kanjealo.getCoupon(couponId);
+      if (!coupon) {
+        container.innerHTML = '<div class="container empty" style="margin:50px auto;max-width:600px;text-align:center;">Beneficio no encontrado o ya no está disponible. <a href="./index.html">Volver al inicio</a></div>';
+        return;
+      }
+
+      document.title = `${coupon.business_name} — Kanjealo`;
+      const catInfo = Kanjealo.CATEGORIES[coupon.category] || ['General', '🏷️'];
+      const activePass = Kanjealo.getActivePass();
+
+      const imgHtml = coupon.image_url
+        ? `<img src="${coupon.image_url}" alt="${coupon.business_name}">`
+        : '<div style="background:#e8eaf0;display:grid;place-items:center;min-height:400px;font-size:50px;">🎁</div>';
+
+      const discountHtml = (coupon.benefit_type === 'descuento' && coupon.discount_percent > 0)
+        ? `<div class="discount-large">${Math.round(coupon.discount_percent)}% de descuento</div>`
+        : '';
+
+      const minPurchaseHtml = coupon.minimum_purchase
+        ? `<p><strong>Compra mínima:</strong> ${coupon.minimum_purchase}</p>`
+        : '';
+
+      const mapsBtnHtml = coupon.maps_url
+        ? `<a class="btn btn-ghost" href="${coupon.maps_url}" target="_blank" rel="noopener">Google Maps</a>`
+        : '';
+
+      let cleanWa = (coupon.whatsapp || '').replace(/[^0-9]/g, '');
+      const waBtnHtml = cleanWa
+        ? `<a class="btn btn-whatsapp" href="https://wa.me/${cleanWa}" target="_blank" rel="noopener">WhatsApp</a>`
+        : '';
+
+      const ctaHtml = activePass
+        ? `<button class="btn btn-primary btn-lg" id="btn-generate-redemption" style="width:100%;">Generar mi código de canje</button>`
+        : `<a class="btn btn-primary btn-lg" href="./comprar.html" style="width:100%;">Comprar Kanjealo para canjear</a>`;
+
+      container.innerHTML = `
+        <section class="coupon-detail">
+          ${imgHtml}
+          <div class="detail-copy">
+            <div class="tag">${catInfo[1]} ${catInfo[0]} · ${coupon.rubro}</div>
+            <h1>${coupon.business_name}</h1>
+            <div class="gift-big">🎁 ${coupon.benefit_text}</div>
+            ${discountHtml}
+            <p>${coupon.description || ''}</p>
+            <div class="saving-box">
+              <strong>Ahorro estimado</strong>
+              <span>US$${Math.round(coupon.estimated_savings || 0)}</span>
+            </div>
+            ${minPurchaseHtml}
+            <p class="address">📍 ${coupon.address}</p>
+            <div class="detail-actions">
+              ${mapsBtnHtml}
+              ${waBtnHtml}
+            </div>
+            <p class="valid">Válido hasta: ${coupon.valid_until || 'Consultar'}</p>
+            <div style="margin-top:25px;">
+              ${ctaHtml}
+            </div>
+          </div>
+        </section>
+      `;
+
+      const genBtn = document.getElementById('btn-generate-redemption');
+      if (genBtn) {
+        genBtn.addEventListener('click', () => {
+          try {
+            const { token } = Kanjealo.generateRedemption(coupon.id);
+            window.location.href = `./canje-generado.html?token=${token}`;
+          } catch (err) {
+            Kanjealo.showToast(err.message, 'error');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

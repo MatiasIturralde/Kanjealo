@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Validación de Canje — Kanjealo</title>
+  <link rel="stylesheet" href="./static/style.css">
+</head>
+<body>
+
+  <header class="nav">
+    <a class="brand" href="./index.html">
+      <span class="brand-mark">K</span>KANJEALO
+    </a>
+    <nav>
+      <a href="./index.html#beneficios">Beneficios</a>
+      <a href="./comprar.html" class="nav-cta">Comprar pase</a>
+    </nav>
+  </header>
+
+  <section class="success-page" id="validate-page-content">
+    <!-- Renderizado dinámico -->
+  </section>
+
+  <footer class="footer">
+    <strong>KANJEALO</strong>
+    <span>Tu pase de beneficios para disfrutar Uruguay.</span>
+    <div class="footer-links">
+      <a href="./comprar.html">Comprar</a>
+      <a href="./admin-login.html">Comercios / Admin</a>
+    </div>
+  </footer>
+
+  <script src="./static/kanjealo.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      const container = document.getElementById('validate-page-content');
+
+      if (!token) {
+        container.innerHTML = '<div class="empty">Código de canje no especificado. <a href="./index.html">Inicio</a></div>';
+        return;
+      }
+
+      const item = Kanjealo.getRedemptionByCode(token);
+      if (!item) {
+        container.innerHTML = `
+          <div class="eyebrow">VALIDACIÓN KANJEALO</div>
+          <h1>Código Inexistente</h1>
+          <div class="result error">El código ingresado no existe en el sistema.</div>
+          <div style="margin-top:20px;"><a class="btn btn-ghost" href="./index.html">Volver</a></div>
+        `;
+        return;
+      }
+
+      const isRedeemed = item.status === 'redeemed';
+      const statusHtml = isRedeemed
+        ? `<div class="result error" style="max-width:500px;margin:20px auto;">⚠ Este beneficio ya fue utilizado.</div>`
+        : `<div class="result success" style="max-width:500px;margin:20px auto;">✓ Código válido. El comercio puede confirmar la entrega del beneficio.</div>`;
+
+      const merchantActionHtml = !isRedeemed
+        ? `
+          <div style="margin-top:25px;">
+            <a class="btn btn-primary" href="./admin-validar.html?code=${item.redemption_code}">Marcar como canjeado</a>
+          </div>
+        `
+        : '';
+
+      container.innerHTML = `
+        <div class="eyebrow">VALIDACIÓN KANJEALO</div>
+        <h1>${item.business_name}</h1>
+        <div class="pass-ticket" style="margin:20px auto;">
+          <strong>${item.redemption_code}</strong>
+          <span>🎁 ${item.benefit_text}</span>
+          ${item.minimum_purchase ? `<small>Compra mínima: ${item.minimum_purchase}</small>` : ''}
+          ${item.valid_until ? `<small>Válido hasta: ${item.valid_until}</small>` : ''}
+        </div>
+        ${statusHtml}
+        ${merchantActionHtml}
+      `;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "kanjealo-backend",
+  "version": "5.0.0",
+  "description": "Kanjealo V5 - Backend en JavaScript (Node.js)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "kanjealo",
+    "tourism",
+    "coupons",
+    "uruguay",
+    "express"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "nunjucks": "^3.2.4",
+    "qrcode": "^1.5.4"
+  }
+}

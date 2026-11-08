@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Validar canje — Kanjealo</title>
+  <link rel="stylesheet" href="./static/style.css">
+</head>
+<body class="admin-bg">
+
+  <main class="form-page container">
+    <a href="./admin.html">← Panel</a>
+    <div class="eyebrow" style="margin-top:15px;">COMERCIO</div>
+    <h1>Validar código de canje</h1>
+
+    <div class="flash-wrap"></div>
+
+    <form class="form-card" id="validate-form">
+      <label>
+        Código de canje
+        <input name="redemption_code" id="redemption-code-input" placeholder="KC-XXXXXXXX" style="text-transform:uppercase;font-size:20px;font-weight:800;letter-spacing:.08em;" autofocus required>
+      </label>
+      <button class="button" type="submit">Validar</button>
+    </form>
+
+    <div id="validation-output"></div>
+  </main>
+
+  <script src="./static/kanjealo.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const codeParam = urlParams.get('code');
+      const inputEl = document.getElementById('redemption-code-input');
+      const outputEl = document.getElementById('validation-output');
+
+      if (codeParam) {
+        inputEl.value = codeParam;
+        doValidate(codeParam);
+      }
+
+      document.getElementById('validate-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const code = inputEl.value.trim();
+        if (code) {
+          doValidate(code);
+        }
+      });
+
+      function doValidate(code) {
+        const res = Kanjealo.validateRedemption(code);
+        if (res.success) {
+          outputEl.innerHTML = `
+            <div class="result success">✓ ${res.message}</div>
+            <div class="validation-card">
+              <h2>${res.result.business_name}</h2>
+              <p>🎁 ${res.result.benefit_text}</p>
+              ${res.result.minimum_purchase ? `<p>Compra mínima: ${res.result.minimum_purchase}</p>` : ''}
+              <strong>${res.result.redemption_code}</strong>
+              <p style="font-size:12px;color:var(--muted);margin-top:10px;">Fecha y hora de canje: ${Kanjealo.formatDate(res.result.redeemed_at)}</p>
+            </div>
+          `;
+        } else {
+          outputEl.innerHTML = `
+            <div class="result error">⚠ ${res.message}</div>
+            ${res.result ? `
+              <div class="validation-card">
+                <h2>${res.result.business_name}</h2>
+                <p>${res.result.benefit_text}</p>
+                <strong>${res.result.redemption_code}</strong>
+                <p style="font-size:12px;color:var(--red);margin-top:10px;">Este beneficio ya fue utilizado el: ${Kanjealo.formatDate(res.result.redeemed_at)}</p>
+              </div>
+            ` : ''}
+          `;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

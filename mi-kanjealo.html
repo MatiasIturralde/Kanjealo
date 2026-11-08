@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi Kanjealo — Pase y Beneficios</title>
+  <link rel="stylesheet" href="./static/style.css">
+</head>
+<body>
+
+  <header class="nav">
+    <a class="brand" href="./index.html">
+      <span class="brand-mark">K</span>KANJEALO
+    </a>
+    <nav>
+      <a href="./index.html#beneficios">Beneficios</a>
+      <a href="./comprar.html" class="nav-cta">Comprar pase</a>
+      <a href="./mi-kanjealo.html" id="nav-my-pass">Mi Kanjealo</a>
+    </nav>
+  </header>
+
+  <div class="flash-wrap"></div>
+
+  <section class="my-pass" id="my-pass-content">
+    <!-- Renderizado dinámico -->
+  </section>
+
+  <footer class="footer">
+    <strong>KANJEALO</strong>
+    <span>Tu pase de beneficios para disfrutar Uruguay.</span>
+    <div class="footer-links">
+      <a href="./comprar.html">Comprar</a>
+      <a href="./admin-login.html">Comercios / Admin</a>
+    </div>
+  </footer>
+
+  <script src="./static/kanjealo.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById('my-pass-content');
+      const pass = Kanjealo.getActivePass();
+
+      if (!pass) {
+        container.innerHTML = `
+          <div class="eyebrow">MI KANJEALO</div>
+          <h1>No tenés un pase activo</h1>
+          <p class="lead">Comprá tu pase por 24 o 48 horas para empezar a ahorrar en comercios participantes de Uruguay.</p>
+          <a class="btn btn-primary btn-lg" href="./comprar.html">Comprar pase ahora</a>
+        `;
+        return;
+      }
+
+      const planInfo = Kanjealo.PLANS[pass.plan] || { label: pass.plan };
+      const redemptions = Kanjealo.getRedemptionsForPass(pass.id);
+
+      let historyHtml = '';
+      if (redemptions.length === 0) {
+        historyHtml = '<div class="empty">Todavía no generaste ningún beneficio. <a href="./index.html#beneficios">Explorar beneficios →</a></div>';
+      } else {
+        historyHtml = '<div class="history">' + redemptions.map(r => {
+          const isRedeemed = r.status === 'redeemed';
+          const savingsHtml = r.estimated_savings ? `<span>Ahorro estimado: US$${Math.round(r.estimated_savings)}</span>` : '';
+          return `
+            <div class="history-item">
+              <div>
+                <strong>${r.business_name}</strong>
+                <span>🎁 ${r.benefit_text}</span>
+                ${savingsHtml}
+              </div>
+              <a href="./canje-generado.html?token=${r.redemption_code}" style="text-decoration:none;">
+                <b style="color:var(--accent);">${r.redemption_code}</b>
+              </a>
+              <em style="color:${isRedeemed ? 'var(--muted)' : 'var(--green)'};">
+                ${isRedeemed ? '✓ Canjeado' : '⏳ Listo para canjear'}
+              </em>
+            </div>
+          `;
+        }).join('') + '</div>';
+      }
+
+      container.innerHTML = `
+        <div class="eyebrow">MI KANJEALO</div>
+        <h1>${planInfo.label}</h1>
+        
+        <div class="mini-pass">
+          <span>CÓDIGO DE PASE</span>
+          <strong>${pass.pass_code}</strong>
+          <small>Activo hasta: ${Kanjealo.formatDate(pass.expires_at)}</small>
+        </div>
+
+        <h2 style="margin:35px 0 15px;">Mis beneficios canjeados</h2>
+        ${historyHtml}
+      `;
+    });
+  </script>
+</body>
+</html>

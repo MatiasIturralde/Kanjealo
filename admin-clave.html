@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cambiar contraseña — Kanjealo</title>
+  <link rel="stylesheet" href="./static/style.css">
+</head>
+<body class="admin-bg">
+
+  <main class="form-page container">
+    <a href="./admin.html">← Panel</a>
+    <h1 style="margin-top:15px;">Cambiar contraseña</h1>
+
+    <div class="flash-wrap"></div>
+
+    <form class="form-card" id="password-form">
+      <label>
+        Contraseña actual
+        <input type="password" name="current" id="p-current" required>
+      </label>
+      <label>
+        Nueva contraseña
+        <input type="password" name="new" id="p-new" placeholder="Mínimo 8 caracteres" required>
+      </label>
+      <label>
+        Repetir nueva contraseña
+        <input type="password" name="confirm" id="p-confirm" required>
+      </label>
+      <button class="button" type="submit" style="align-self:flex-start;">Actualizar</button>
+    </form>
+  </main>
+
+  <script src="./static/kanjealo.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!Kanjealo.isAdminLoggedIn()) {
+        window.location.href = './admin-login.html';
+        return;
+      }
+
+      document.getElementById('password-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const current = document.getElementById('p-current').value;
+        const newPass = document.getElementById('p-new').value;
+        const confirmPass = document.getElementById('p-confirm').value;
+
+        if (newPass !== confirmPass) {
+          Kanjealo.showToast('Las contraseñas no coinciden.', 'error');
+          return;
+        }
+
+        try {
+          Kanjealo.changePassword(current, newPass);
+          alert('Contraseña actualizada con éxito.');
+          window.location.href = './admin.html';
+        } catch (err) {
+          Kanjealo.showToast(err.message, 'error');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
